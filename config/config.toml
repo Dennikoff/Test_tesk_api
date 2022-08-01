@@ -1,0 +1,2 @@
+addr = ":8080"
+database_url = "host=localhost dbname=usertag_dev password=123 sslmode=disable"

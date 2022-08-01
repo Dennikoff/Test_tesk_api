@@ -1,3 +1,4 @@
 .idea
 Makefile
 go.sum
+config
