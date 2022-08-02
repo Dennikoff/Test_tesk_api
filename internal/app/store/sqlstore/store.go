@@ -1,9 +1,13 @@
 package sqlstore
 
-import "database/sql"
+import (
+	"database/sql"
+	"github.com/Dennikoff/UserTagApi/internal/app/store"
+)
 
 type Store struct {
-	db *sql.DB
+	db             *sql.DB
+	UserRepository *UserRepository
 }
 
 func New(db *sql.DB) *Store {
@@ -12,6 +16,11 @@ func New(db *sql.DB) *Store {
 	}
 }
 
-func (s *Store) User() int {
-	return 1
+func (s *Store) User() store.UserRepository {
+	if s.UserRepository == nil {
+		s.UserRepository = &UserRepository{
+			store: s,
+		}
+	}
+	return s.UserRepository
 }
