@@ -11,3 +11,7 @@ func New(db *sql.DB) *Store {
 		db: db,
 	}
 }
+
+func (s *Store) User() int {
+	return 1
+}
