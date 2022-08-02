@@ -8,7 +8,7 @@ func Start(config Config) error {
 		return err
 	}
 	defer db.Close()
-
+	return nil
 }
 
 func NewDB(driverName string, databaseURL string) (*sql.DB, error) {
