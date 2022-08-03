@@ -3,6 +3,7 @@ package model
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -20,4 +21,14 @@ func (u *User) Validate() error {
 		validation.Field(&u.Password, validation.Required, validation.Length(6, 100)),
 		validation.Field(&u.NickName, validation.Required),
 	)
+}
+
+func (u *User) BeforeCreate() error {
+	pass, err := bcrypt.GenerateFromPassword([]byte(u.Password), 5)
+	if err != nil {
+		return err
+	}
+	u.EncryptedPassword = string(pass)
+	u.Password = ""
+	return nil
 }
