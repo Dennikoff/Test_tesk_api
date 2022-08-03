@@ -3,6 +3,7 @@ package sqlstore
 import (
 	"database/sql"
 	"github.com/Dennikoff/UserTagApi/internal/app/store"
+	_ "github.com/lib/pq"
 )
 
 type Store struct {

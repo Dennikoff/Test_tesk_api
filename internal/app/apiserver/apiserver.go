@@ -14,6 +14,7 @@ func Start(config Config) error {
 	defer func() { _ = db.Close() }()
 	store := sqlstore.New(db)
 	server := newServer(store)
+	server.logger.Info("Start Api Server")
 	return http.ListenAndServe(config.Addr, server)
 }
 

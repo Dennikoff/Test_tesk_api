@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/Dennikoff/UserTagApi/internal/app/apiserver"
 	"log"
@@ -14,5 +13,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(config)
+	if err := apiserver.Start(config); err != nil {
+		log.Fatal(err)
+	}
 }
