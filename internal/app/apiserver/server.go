@@ -2,7 +2,6 @@ package apiserver
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Dennikoff/UserTagApi/internal/app/model"
 	"github.com/Dennikoff/UserTagApi/internal/app/store"
 	"github.com/gorilla/mux"
@@ -41,7 +40,6 @@ func (s *server) handleUserCreate() http.HandlerFunc {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
-		fmt.Println(user)
 		if err := s.store.User().Create(user); err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
