@@ -19,3 +19,21 @@ func TestUserRepository_Create(t *testing.T) {
 	assert.NoError(t, st.User().Create(user))
 	assert.Error(t, st.User().Create(user))
 }
+
+func TestUserRepository_FindByEmail(t *testing.T) {
+	db, del := sqlstore.TestDB(t, DatabaseURL)
+
+	st := sqlstore.New(db)
+
+	defer del("users")
+
+	user := model.TestUser()
+
+	assert.NoError(t, st.User().Create(user))
+	u, _ := st.User().FindByEmail(user.Email)
+
+	assert.NotNil(t, u)
+	u, err := st.User().FindByEmail("not@in.db")
+	assert.Error(t, err)
+	assert.Nil(t, u)
+}

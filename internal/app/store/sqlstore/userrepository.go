@@ -22,3 +22,19 @@ func (r *UserRepository) Create(user *model.User) error {
 	}
 	return nil
 }
+
+func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
+	user := &model.User{}
+
+	if err := r.store.db.QueryRow(
+		"SELECT id, email, password, nickname from users where email=$1",
+		email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.EncryptedPassword,
+		&user.NickName); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
