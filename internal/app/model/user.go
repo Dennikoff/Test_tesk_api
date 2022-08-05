@@ -32,3 +32,7 @@ func (u *User) BeforeCreate() error {
 	u.Password = ""
 	return nil
 }
+
+func (u *User) CheckPassword(password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.EncryptedPassword), []byte(password))
+}

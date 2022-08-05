@@ -2,11 +2,16 @@ package apiserver
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/Dennikoff/UserTagApi/internal/app/model"
 	"github.com/Dennikoff/UserTagApi/internal/app/store"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
+)
+
+var (
+	errUserNotFound = errors.New("email or password are not correct")
 )
 
 type server struct {
@@ -27,10 +32,31 @@ func newServer(store store.Store) *server {
 
 func (s *server) configureRouter() {
 	s.router.HandleFunc("/signup", s.handleUserCreate()).Methods(http.MethodPost)
+	s.router.HandleFunc("/login", s.handleUserLogin()).Methods(http.MethodPost)
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
+}
+
+func (s *server) handleUserLogin() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := &model.User{}
+		if err := json.NewDecoder(r.Body).Decode(user); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		us, err := s.store.User().FindByEmail(user.Email)
+		if err != nil {
+			s.error(w, r, http.StatusUnauthorized, errUserNotFound)
+			return
+		}
+		if err := us.CheckPassword(user.Password); err != nil {
+			s.error(w, r, http.StatusUnauthorized, errUserNotFound)
+			return
+		}
+		s.response(w, r, http.StatusOK, us)
+	}
 }
 
 func (s *server) handleUserCreate() http.HandlerFunc {
