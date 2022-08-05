@@ -9,7 +9,8 @@ import (
 
 func TestUserRepository_Create(t *testing.T) {
 	st := teststore.New()
-	testcases := []struct {
+
+	testCases := []struct {
 		name string
 		user func() *model.User
 		ok   bool
@@ -56,7 +57,7 @@ func TestUserRepository_Create(t *testing.T) {
 			ok: false,
 		},
 	}
-	for _, cs := range testcases {
+	for _, cs := range testCases {
 		t.Run(cs.name, func(t *testing.T) {
 			if cs.ok {
 				assert.NoError(t, st.User().Create(cs.user()))
@@ -66,4 +67,19 @@ func TestUserRepository_Create(t *testing.T) {
 		})
 	}
 
+}
+
+func TestUserRepository_FindByEmail(t *testing.T) {
+
+	st := teststore.New()
+
+	user := model.TestUser()
+
+	assert.NoError(t, st.User().Create(user))
+	u, _ := st.User().FindByEmail(user.Email)
+
+	assert.NotNil(t, u)
+	u, err := st.User().FindByEmail("not@in.db")
+	assert.Error(t, err)
+	assert.Nil(t, u)
 }

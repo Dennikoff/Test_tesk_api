@@ -13,11 +13,62 @@ func TestUserRepository_Create(t *testing.T) {
 	st := sqlstore.New(db)
 
 	defer del("users")
-
-	user := model.TestUser()
-
-	assert.NoError(t, st.User().Create(user))
-	assert.Error(t, st.User().Create(user))
+	testCases := []struct {
+		name string
+		user func() *model.User
+		ok   bool
+	}{
+		{
+			name: "valid",
+			user: func() *model.User {
+				return model.TestUser()
+			},
+			ok: true,
+		},
+		{
+			name: "Duplicate key",
+			user: func() *model.User {
+				return model.TestUser()
+			},
+			ok: false,
+		},
+		{
+			name: "invalid pass",
+			user: func() *model.User {
+				user := model.TestUser()
+				user.Password = ""
+				return user
+			},
+			ok: false,
+		},
+		{
+			name: "invalid email 1",
+			user: func() *model.User {
+				user := model.TestUser()
+				user.Email = "test@email"
+				return user
+			},
+			ok: false,
+		},
+		{
+			name: "invalid email 2",
+			user: func() *model.User {
+				user := model.TestUser()
+				user.Email = "testemail.com"
+				return user
+			},
+			ok: false,
+		},
+	}
+	for _, cs := range testCases {
+		t.Run(cs.name, func(t *testing.T) {
+			if cs.ok {
+				assert.NoError(t, st.User().Create(cs.user()))
+			} else {
+				assert.Error(t, st.User().Create(cs.user()))
+			}
+		})
+	}
 }
 
 func TestUserRepository_FindByEmail(t *testing.T) {
