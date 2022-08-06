@@ -1,17 +1,24 @@
 package apiserver
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/Dennikoff/UserTagApi/internal/app/model"
 	"github.com/Dennikoff/UserTagApi/internal/app/store"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 var (
 	errUserNotFound = errors.New("email or password are not correct")
+)
+
+const (
+	keyReqId = iota
 )
 
 type server struct {
@@ -37,6 +44,31 @@ func (s *server) configureRouter() {
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
+}
+
+func (s *server) setReqId(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := uuid.New().String()
+		w.Header().Set("X-Request-ID", id)
+		s.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), keyReqId, id)))
+	})
+}
+
+func (s *server) setLogger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := s.logger.WithFields(logrus.Fields{
+			"addr":   r.RemoteAddr,
+			"req_id": r.Context().Value(keyReqId),
+		})
+		start := time.Now()
+		logger.Infof("Start %s %s\n", r.Method, r.RequestURI)
+		wr := &ResponseWriter{
+			w,
+			0,
+		}
+		s.ServeHTTP(wr, r)
+		logger.Info("finished with code %d %s in %s", wr.code, http.StatusText(wr.code), time.Since(start))
+	})
 }
 
 func (s *server) handleUserLogin() http.HandlerFunc {
