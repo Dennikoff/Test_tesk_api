@@ -55,6 +55,8 @@ func (s *server) handleUserLogin() http.HandlerFunc {
 			s.error(w, r, http.StatusUnauthorized, errUserNotFound)
 			return
 		}
+		s.createSession()
+
 		s.response(w, r, http.StatusOK, us)
 	}
 }
@@ -72,6 +74,10 @@ func (s *server) handleUserCreate() http.HandlerFunc {
 		}
 		s.response(w, r, http.StatusCreated, user)
 	}
+}
+
+func (s *server) createSession() {
+
 }
 
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
