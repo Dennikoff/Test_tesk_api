@@ -38,6 +38,8 @@ func newServer(store store.Store) *server {
 }
 
 func (s *server) configureRouter() {
+	s.router.Use(s.setReqId)
+	s.router.Use(s.setLogger)
 	s.router.HandleFunc("/signup", s.handleUserCreate()).Methods(http.MethodPost)
 	s.router.HandleFunc("/login", s.handleUserLogin()).Methods(http.MethodPost)
 }
@@ -50,7 +52,7 @@ func (s *server) setReqId(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := uuid.New().String()
 		w.Header().Set("X-Request-ID", id)
-		s.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), keyReqId, id)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), keyReqId, id)))
 	})
 }
 
@@ -66,7 +68,7 @@ func (s *server) setLogger(next http.Handler) http.Handler {
 			w,
 			0,
 		}
-		s.ServeHTTP(wr, r)
+		next.ServeHTTP(wr, r)
 		logger.Info("finished with code %d %s in %s", wr.code, http.StatusText(wr.code), time.Since(start))
 	})
 }
